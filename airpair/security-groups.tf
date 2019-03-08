@@ -1,6 +1,6 @@
 /* Default security group */
 resource "aws_security_group" "default" {
-  name = "iono-tf-vpc-main"
+  name = "${var.prefix}-sg-default"
   description = "Default security group that allows inbound and outbound traffic from all instances in the VPC"
   vpc_id = "${aws_vpc.vpc_main.id}"
 
@@ -19,13 +19,13 @@ resource "aws_security_group" "default" {
   }
 
   tags {
-    Name = "iono-tf-vpc-main"
+    Name = "${var.prefix}-sg-default"
   }
 }
 
 /* Security group for the nat server */
 resource "aws_security_group" "nat" {
-  name = "iono-tf-nat"
+  name = "${var.prefix}-sg-nat"
   description = "Security group for nat instances that allows SSH and VPN traffic from internet. Also allows outbound HTTP[S]"
   vpc_id = "${aws_vpc.vpc_main.id}"
 
@@ -57,15 +57,14 @@ resource "aws_security_group" "nat" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
-
   tags {
-    Name = "iono-tf-nat"
+    Name = "${var.prefix}-sg-nat"
   }
 }
 
 /* Security group for the web */
 resource "aws_security_group" "web" {
-  name = "iono-tf-web"
+  name = "${var.prefix}-sg-web"
   description = "Security group for web that allows web traffic from internet"
   vpc_id = "${aws_vpc.vpc_main.id}"
 
@@ -84,6 +83,6 @@ resource "aws_security_group" "web" {
   }
 
   tags {
-    Name = "iono-tf-web"
+    Name = "${var.prefix}-sg-web"
   }
 }

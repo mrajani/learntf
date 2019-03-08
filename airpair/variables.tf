@@ -1,11 +1,3 @@
-# variable "access_key" {
-#   description = "AWS access key"
-# }
-# Use Credentials Files
-# variable "secret_key" {
-#   description = "AWS secret access key"
-# }
-
 variable "region"     {
   description = "AWS region to host your network"
   default     = "us-west-1"
@@ -28,7 +20,7 @@ variable "private_subnet_cidr" {
   # 10.10.1.0/24
 }
 
-/* Ubuntu 14.04 amis by region */
+/* Ubuntu 18.04 amis by region */
 variable "amis" {
   description = "Base AMI to launch the instances with"
   default = {
@@ -38,7 +30,16 @@ variable "amis" {
   }
 }
 
+variable "instance_type" {
+  default = "t2.micro"
+}
+
 variable "login" {
-  description = "User login based on AMI selected"
-  default = "ec2-user"
+  description = "default login ex. ubuntu or ec2-user or bitnami"
+  default = "ubuntu"
+}
+
+variable "prefix" {
+  description = "setup a prefix for all your deployed resources using terraform"
+  default = "Iono"
 }

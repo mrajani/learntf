@@ -2,7 +2,7 @@
 resource "aws_internet_gateway" "default" {
   vpc_id = "${aws_vpc.vpc_main.id}"
   tags {
-    Name = "iono-tf-igw"
+    Name = "${var.prefix}-igw"
   }
 }
 
@@ -14,7 +14,7 @@ resource "aws_subnet" "public" {
   map_public_ip_on_launch = true
   depends_on = ["aws_internet_gateway.default"]
   tags {
-    Name = "iono-tf-public"
+    Name = "${var.prefix}-subnet-pub"
   }
 }
 
@@ -26,7 +26,7 @@ resource "aws_route_table" "public" {
     gateway_id = "${aws_internet_gateway.default.id}"
   }
   tags {
-    Name = "iono-tf-route"
+    Name = "${var.prefix}-rtpub-igw"
   }
 }
 

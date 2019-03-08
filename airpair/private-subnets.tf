@@ -6,7 +6,7 @@ resource "aws_subnet" "private" {
   map_public_ip_on_launch = false
   depends_on = ["aws_instance.nat"]
   tags {
-    Name = "iono-tf-private"
+    Name = "${var.prefix}-subnet-priv"
   }
 }
 
@@ -16,6 +16,9 @@ resource "aws_route_table" "private" {
   route {
     cidr_block = "0.0.0.0/0"
     instance_id = "${aws_instance.nat.id}"
+  }
+  tags {
+    Name = "${var.prefix}-rt-priv"
   }
 }
 
