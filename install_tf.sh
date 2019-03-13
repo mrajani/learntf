@@ -23,7 +23,7 @@ else
   exit 1;
 fi
 
-curl -sSL https://releases.hashicorp.com/terraform/0.11.10/terraform_0.11.10_linux_amd64.zip -o tf.zip
+curl -sSL https://releases.hashicorp.com/terraform/0.11.11/terraform_0.11.11_linux_amd64.zip -o tf.zip
 unzip tf.zip && sudo mv terraform /usr/local/bin/terraform
 rm tf.zip
 terraform -version
