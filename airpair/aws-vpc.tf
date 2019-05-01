@@ -1,7 +1,7 @@
 /* Setup our aws provider */
 provider "aws" {
   region = "${var.region}"
-  shared_credentials_file = "/home/laltopi/.aws/credentials"
+  shared_credentials_file = "${file("${var.creds_path}")}"
 }
 
 /* Define our vpc */

@@ -11,7 +11,7 @@ resource "aws_instance" "nat" {
   }
   connection {
     user = "${var.login}"
-    private_key = "${file("/home/laltopi/.ssh/aws_tfadmin_id")}"
+    private_key = "${file("${var.key_pair_path}")}"
   }
   provisioner "remote-exec" {
     inline = [

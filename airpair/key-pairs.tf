@@ -1,4 +1,4 @@
 resource "aws_key_pair" "deployer" {
   key_name = "${var.prefix}-key"
-  public_key = "${file("/home/laltopi/.ssh/aws_tfadmin_id.pub")}"
+  public_key = "${file("${var.key_pair_path}.pub")}"
 }

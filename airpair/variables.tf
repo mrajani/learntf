@@ -43,3 +43,13 @@ variable "prefix" {
   description = "setup a prefix for all your deployed resources using terraform"
   default = "Iono"
 }
+
+variable "key_pair_path" {
+  description = "path to key pair"
+  default     = "/home/vagrant/.ssh/id_rsa"
+}
+
+variable "creds_path" {
+  description = "path to credentials pair"
+  default     = "/home/vagrant/.aws/credentials"
+}
