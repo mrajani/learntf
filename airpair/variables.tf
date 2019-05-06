@@ -53,3 +53,5 @@ variable "creds_path" {
   description = "path to credentials pair"
   default     = "/home/vagrant/.aws/credentials"
 }
+
+data "aws_availability_zones" "azs" {}

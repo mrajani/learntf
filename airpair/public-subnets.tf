@@ -10,7 +10,7 @@ resource "aws_internet_gateway" "default" {
 resource "aws_subnet" "public" {
   vpc_id            = "${aws_vpc.vpc_main.id}"
   cidr_block        = "${cidrsubnet(aws_vpc.vpc_main.cidr_block, 8, 0)}"
-  availability_zone = "us-west-1b"
+  availability_zone = "${data.aws_availability_zones.azs.names[0]}"
   map_public_ip_on_launch = true
   depends_on = ["aws_internet_gateway.default"]
   tags {
