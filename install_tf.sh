@@ -1,5 +1,4 @@
 #!/bin/bash
-user=${1:-vagrant}
 
 if [[ ( -z ${os} && -z ${dist} ) ]]; then
   if [ -e /etc/os-release ]; then
@@ -23,7 +22,8 @@ else
   exit 1;
 fi
 
-curl -sSL https://releases.hashicorp.com/terraform/0.11.13/terraform_0.11.13_linux_amd64.zip -o tf.zip
+rel=${1:-0.12.0}
+curl -sSL https://releases.hashicorp.com/terraform/${rel}/terraform_${rel}_linux_amd64.zip -o tf.zip
 unzip tf.zip && sudo mv terraform /usr/local/bin/terraform
 rm tf.zip
 terraform -version
