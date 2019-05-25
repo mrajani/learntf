@@ -7,16 +7,6 @@ provider "aws" {
   shared_credentials_file = "${file("${var.creds_path}")}"
 }
 
-/* Define our vpc */
-resource "aws_vpc" "vpc_main" {
-  cidr_block           = "${var.vpc_cidr}"
-  enable_dns_hostnames = true
-
-  tags {
-    Name = "${var.prefix}-vpc-main"
-  }
-}
-
 ##################################################################################
 # RESOURCES
 ##################################################################################
@@ -32,7 +22,8 @@ resource "aws_dynamodb_table" "terraform_statelock" {
   }
 
   tags {
-    Name = "TF Locktable Backend"
+    Name    = "TF Locktable"
+    Purpose = "Remote State Backend"
   }
 }
 
@@ -53,7 +44,7 @@ resource "aws_s3_bucket" "ddtnet" {
             "Sid": "ReadforAppTeam",
             "Effect": "Allow",
             "Principal": {
-                "AWS": "${aws_iam_user.netadmin.arn}"
+                "AWS": "${aws_iam_user.appadmin.arn}"
             },
             "Action": "s3:GetObject",
             "Resource": "arn:aws:s3:::${var.aws_networking_bucket}/*"
@@ -62,7 +53,7 @@ resource "aws_s3_bucket" "ddtnet" {
             "Sid": "",
             "Effect": "Allow",
             "Principal": {
-                "AWS": "${aws_iam_user.appadmin.arn}"
+                "AWS": "${aws_iam_user.netadmin.arn}"
             },
             "Action": "s3:*",
             "Resource": [
@@ -75,7 +66,8 @@ resource "aws_s3_bucket" "ddtnet" {
 EOF
 
   tags {
-    Name = "${var.prefix}-ddt-s3-net"
+    Name    = "${var.prefix}-ddt-s3-net"
+    Purpose = "S3 Bucket for remote state"
   }
 }
 
@@ -96,7 +88,7 @@ resource "aws_s3_bucket" "ddtapp" {
             "Sid": "ReadforNetTeam",
             "Effect": "Allow",
             "Principal": {
-                "AWS": "${aws_iam_user.appadmin.arn}"
+                "AWS": "${aws_iam_user.netadmin.arn}"
             },
             "Action": "s3:GetObject",
             "Resource": "arn:aws:s3:::${var.aws_application_bucket}/*"
@@ -105,7 +97,7 @@ resource "aws_s3_bucket" "ddtapp" {
             "Sid": "",
             "Effect": "Allow",
             "Principal": {
-                "AWS": "${aws_iam_user.netadmin.arn}"
+                "AWS": "${aws_iam_user.appadmin.arn}"
             },
             "Action": "s3:*",
             "Resource": [
@@ -118,12 +110,13 @@ resource "aws_s3_bucket" "ddtapp" {
 EOF
 
   tags {
-    Name = "${var.prefix}-ddt-s3-app"
+    Name    = "${var.prefix}-ddt-s3-app"
+    Purpose = "S3 Bucket for remote state"
   }
 }
 
 resource "aws_iam_group" "ec2admin" {
-  name = "EC2Admin"
+  name = "EC2AdminGroup"
 }
 
 resource "aws_iam_group_policy_attachment" "ec2admin-attach" {
@@ -131,26 +124,17 @@ resource "aws_iam_group_policy_attachment" "ec2admin-attach" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2FullAccess"
 }
 
-resource "aws_iam_group" "s3admin" {
-  name = "S3Admin"
-}
-
-resource "aws_iam_group_policy_attachment" "s3admin-attach" {
-  group      = "${aws_iam_group.s3admin.name}"
-  policy_arn = "arn:aws:iam::aws:policy/AmazonS3FullAccess"
-}
-
-resource "aws_iam_user" "netadmin" {
-  name = "netadmin"
+resource "aws_iam_user" "appadmin" {
+  name = "appadmin"
 
   tags {
-    Name = "Admin for Networking"
+    Name = "${var.prefix}-App-Admin"
   }
 }
 
-resource "aws_iam_user_policy" "netadmin_rw" {
-  name = "netadmin"
-  user = "${aws_iam_user.netadmin.name}"
+resource "aws_iam_user_policy" "appadmin_rw" {
+  name = "appadmin"
+  user = "${aws_iam_user.appadmin.name}"
 
   policy = <<EOF
 {
@@ -176,21 +160,21 @@ resource "aws_iam_user_policy" "netadmin_rw" {
 EOF
 }
 
-resource "aws_iam_user" "appadmin" {
-  name = "appadmin"
+resource "aws_iam_user" "netadmin" {
+  name = "netadmin"
 
   tags {
-    Name = "Admin for Application"
+    Name = "${var.prefix}-Net-Admin"
   }
 }
 
-resource "aws_iam_access_key" "appadmin" {
-  user = "${aws_iam_user.appadmin.name}"
+resource "aws_iam_access_key" "netadmin" {
+  user = "${aws_iam_user.netadmin.name}"
 }
 
-resource "aws_iam_user_policy" "appadmin_rw" {
-  name = "appadmin"
-  user = "${aws_iam_user.appadmin.name}"
+resource "aws_iam_user_policy" "netadmin_rw" {
+  name = "netadmin"
+  user = "${aws_iam_user.netadmin.name}"
 
   policy = <<EOF
 {
@@ -216,15 +200,15 @@ resource "aws_iam_user_policy" "appadmin_rw" {
 EOF
 }
 
-resource "aws_iam_access_key" "netadmin" {
-  user = "${aws_iam_user.netadmin.name}"
+resource "aws_iam_access_key" "appadmin" {
+  user = "${aws_iam_user.appadmin.name}"
 }
 
 resource "aws_iam_group_membership" "add-ec2admin" {
   name = "add-ec2admin"
 
   users = [
-    "${aws_iam_user.netadmin.name}",
+    "${aws_iam_user.appadmin.name}",
   ]
 
   group = "${aws_iam_group.ec2admin.name}"
