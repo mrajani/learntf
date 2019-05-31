@@ -62,14 +62,6 @@ data "aws_availability_zones" "azs" {}
 
 ### PreRequisites for s3 Backend tfstatelock
 
-variable "aws_networking_bucket" {
-  default = "ddt-net-cdergnaw"
-}
-
-variable "aws_application_bucket" {
-  default = "ddt-app-cdergnaw"
-}
-
 variable "aws_dynamodb_table" {
   default = "ddt-tfstatelock"
 }

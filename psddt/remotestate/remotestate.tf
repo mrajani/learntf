@@ -7,9 +7,22 @@ provider "aws" {
   shared_credentials_file = "${file("${var.creds_path}")}"
 }
 
+resource "random_string" "bucket_prefix" {
+  length  = 12
+  upper   = false
+  special = false
+  number  = false
+}
+
 ##################################################################################
 # RESOURCES
 ##################################################################################
+
+locals {
+  aws_networking_bucket  = "ddt-net-${random_string.bucket_prefix.result}"
+  aws_application_bucket = "ddt-app-${random_string.bucket_prefix.result}"
+}
+
 resource "aws_dynamodb_table" "terraform_statelock" {
   name           = "${var.aws_dynamodb_table}"
   read_capacity  = 20
@@ -28,7 +41,7 @@ resource "aws_dynamodb_table" "terraform_statelock" {
 }
 
 resource "aws_s3_bucket" "ddtnet" {
-  bucket        = "${var.aws_networking_bucket}"
+  bucket        = "${local.aws_networking_bucket}"
   acl           = "private"
   force_destroy = true
 
@@ -47,7 +60,7 @@ resource "aws_s3_bucket" "ddtnet" {
                 "AWS": "${aws_iam_user.appadmin.arn}"
             },
             "Action": "s3:GetObject",
-            "Resource": "arn:aws:s3:::${var.aws_networking_bucket}/*"
+            "Resource": "arn:aws:s3:::${local.aws_networking_bucket}/*"
         },
         {
             "Sid": "",
@@ -57,8 +70,8 @@ resource "aws_s3_bucket" "ddtnet" {
             },
             "Action": "s3:*",
             "Resource": [
-                "arn:aws:s3:::${var.aws_networking_bucket}",
-                "arn:aws:s3:::${var.aws_networking_bucket}/*"
+                "arn:aws:s3:::${local.aws_networking_bucket}",
+                "arn:aws:s3:::${local.aws_networking_bucket}/*"
             ]
         }
     ]
@@ -72,7 +85,7 @@ EOF
 }
 
 resource "aws_s3_bucket" "ddtapp" {
-  bucket        = "${var.aws_application_bucket}"
+  bucket        = "${local.aws_application_bucket}"
   acl           = "private"
   force_destroy = true
 
@@ -91,7 +104,7 @@ resource "aws_s3_bucket" "ddtapp" {
                 "AWS": "${aws_iam_user.netadmin.arn}"
             },
             "Action": "s3:GetObject",
-            "Resource": "arn:aws:s3:::${var.aws_application_bucket}/*"
+            "Resource": "arn:aws:s3:::${local.aws_application_bucket}/*"
         },
         {
             "Sid": "",
@@ -101,8 +114,8 @@ resource "aws_s3_bucket" "ddtapp" {
             },
             "Action": "s3:*",
             "Resource": [
-                "arn:aws:s3:::${var.aws_application_bucket}",
-                "arn:aws:s3:::${var.aws_application_bucket}/*"
+                "arn:aws:s3:::${local.aws_application_bucket}",
+                "arn:aws:s3:::${local.aws_application_bucket}/*"
             ]
         }
     ]
@@ -144,8 +157,8 @@ resource "aws_iam_user_policy" "appadmin_rw" {
             "Effect": "Allow",
             "Action": "s3:*",
             "Resource": [
-                "arn:aws:s3:::${var.aws_application_bucket}",
-                "arn:aws:s3:::${var.aws_application_bucket}/*"
+                "arn:aws:s3:::${local.aws_application_bucket}",
+                "arn:aws:s3:::${local.aws_application_bucket}/*"
             ]
         },
                 {
@@ -184,8 +197,8 @@ resource "aws_iam_user_policy" "netadmin_rw" {
             "Effect": "Allow",
             "Action": "s3:*",
             "Resource": [
-                "arn:aws:s3:::${var.aws_networking_bucket}",
-                "arn:aws:s3:::${var.aws_networking_bucket}/*"
+                "arn:aws:s3:::${local.aws_networking_bucket}",
+                "arn:aws:s3:::${local.aws_networking_bucket}/*"
             ]
         },
                 {
