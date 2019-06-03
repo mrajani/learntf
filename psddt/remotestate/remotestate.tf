@@ -229,8 +229,6 @@ resource "aws_iam_group_membership" "add-ec2admin" {
 
 resource "local_file" "aws_keys" {
   content = <<EOF
-[default]
-
 [netadmin]
 aws_access_key_id = ${aws_iam_access_key.netadmin.id}
 aws_secret_access_key = ${aws_iam_access_key.netadmin.secret}
@@ -242,4 +240,32 @@ aws_secret_access_key = ${aws_iam_access_key.appadmin.secret}
 EOF
 
   filename = "${var.user_home_path}/.aws/credentials"
+}
+
+resource "local_file" "netadmin_profile" {
+  content = <<EOF
+  region         = "${var.region}"
+  bucket         = "${local.aws_networking_bucket}"
+  key            = "networking-terraform.state"
+  dynamodb_table = "${var.aws_dynamodb_table}"
+  profile        = "netadmin"
+  shared_credentials_file = "../.aws/credentials"
+
+EOF
+
+  filename = "../netadmin/terraform.tfvars"
+}
+
+resource "local_file" "appadmin_profile" {
+  content = <<EOF
+  region         = "${var.region}"
+  bucket         = "${local.aws_application_bucket}"
+  key            = "networking-terraform.state"
+  dynamodb_table = "${var.aws_dynamodb_table}"
+  profile        = "appadmin"
+  shared_credentials_file = "../.aws/credentials"
+  
+  EOF
+
+  filename = "../appadmin/terraform.tfvars"
 }

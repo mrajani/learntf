@@ -67,7 +67,7 @@ variable "aws_dynamodb_table" {
 }
 
 variable "user_home_path" {
-  default = "."
+  default = ".."
 
   ##### creates an .aws dir in current dir ######
 }
