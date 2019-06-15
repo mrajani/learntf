@@ -20,7 +20,7 @@ variable "azs" {
 
 variable "enable_dns_hostnames" {
   description = "should be true if you want to use private DNS within the VPC"
-  default     = false
+  default     = true
 }
 
 variable "enable_dns_support" {
@@ -29,8 +29,8 @@ variable "enable_dns_support" {
 }
 
 variable "enable_nat_gateway" {
-  description = "should be true if you want to provision NAT Gateways for each of your private networks"
-  default     = false
+  description = "Set to true to provision NAT Gateways for each of your private networks"
+  default     = "true"
 }
 
 variable "map_public_ip_on_launch" {
@@ -55,10 +55,24 @@ variable "tags" {
 
 variable "public_subnet_tags" {
   description = "Additional tags for the public subnets"
-  default     = {}
+
+  default = {
+    type = "public subnet"
+  }
 }
 
 variable "private_subnet_tags" {
   description = "Additional tags for the public subnets"
-  default     = {}
+
+  default = {
+    type = "private subnet"
+  }
+}
+
+variable "private_eip_tags" {
+  description = "Additional tags for the Elastic IPs"
+
+  default = {
+    type = "eip for nat gateway"
+  }
 }
