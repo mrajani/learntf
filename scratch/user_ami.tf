@@ -1,6 +1,6 @@
 variable "region" {
   description = "AWS region to host your network"
-  default     = "us-west-1"
+  default     = "us-west-2"
 }
 
 variable "amis" {
@@ -8,8 +8,7 @@ variable "amis" {
 
   default = {
     us-west-1 = "ami-063aa838bd7631e0b"
-
-    # us-west-1 = "ami-0ec6517f6edbf8044"
+    us-west-2 = "ami-0cb72367e98845d43"
     us-east-1 = "ami-0ac019f4fcb7cb7e6"
   }
 }
@@ -28,6 +27,57 @@ output "instance" {
 
 provider "aws" {
   region = "${var.region}"
+}
+
+data "aws_ami" "amazon" {
+  most_recent = true
+  owners      = ["amazon"]
+  name_regex  = "amzn2-ami-hvm-2.0.*-x86_64-gp2"
+
+  filter {
+    name   = "owner-id"
+    values = ["137112412989"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+
+  filter {
+    name   = "state"
+    values = ["available"]
+  }
+}
+
+data "aws_ami" "ubuntu" {
+  most_recent = true
+  owners      = ["099720109477"]
+
+  filter {
+    name   = "name"
+    values = ["ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-*"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+
+  filter {
+    name   = "root-device-type"
+    values = ["ebs"]
+  }
+
+  filter {
+    name   = "state"
+    values = ["available"]
+  }
 }
 
 data "aws_ami" "centos" {
@@ -55,6 +105,14 @@ data "aws_ami" "centos" {
   }
 }
 
-output "my_ami" {
+output "amazon_ami" {
+  value = "${data.aws_ami.amazon.image_id}"
+}
+
+output "ubuntu_ami" {
+  value = "${data.aws_ami.ubuntu.image_id}"
+}
+
+output "centos_ami" {
   value = "${data.aws_ami.centos.image_id}"
 }
