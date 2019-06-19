@@ -1,9 +1,9 @@
 resource "aws_vpc" "main" {
-  cidr_block           = var.vpc_cidr
-  enable_dns_hostnames = true
-  enable_dns_support   = true
-
-  tags = var.tags
+  cidr_block                       = var.vpc_cidr
+  enable_dns_hostnames             = true
+  enable_dns_support               = true
+  assign_generated_ipv6_cidr_block = true
+  tags                             = var.tags
 
 }
 data "aws_availability_zones" "available" {
@@ -23,14 +23,7 @@ resource "aws_eip" "nateip" {
   tags  = merge(var.tags, map("Name", format("%s-nat-eip", var.tags["Name"])))
 }
 
-// nat gatewys
-resource "aws_nat_gateway" "natgw" {
-  count         = "${var.subnet_count * lookup(map(var.enable_nat_gateway, 1), "true", 0)}"
-  allocation_id = element(aws_eip.nateip.*.id, count.index)
-  subnet_id     = element(aws_subnet.public.*.id, count.index)
-  depends_on    = ["aws_internet_gateway.main"]
-  tags          = merge(var.tags, map("Name", format("%s-ngw-%s", var.tags["Name"], element(data.aws_availability_zones.available.names, count.index))))
-}
+
 
 // Create three types of subnets, three each
 resource "aws_subnet" "public" {
@@ -63,7 +56,7 @@ resource "aws_subnet" "db" {
 
 }
 
-// Create Route Tables
+// Create Route Tables for Public subnet
 resource "aws_route_table" "public" {
   vpc_id = aws_vpc.main.id
 
@@ -81,11 +74,45 @@ resource "aws_route_table_association" "public" {
 }
 
 
+// nat gateways
+resource "aws_nat_gateway" "natgw" {
+  count         = "${var.subnet_count * lookup(map(var.enable_nat_gateway, 1), "true", 0)}"
+  allocation_id = element(aws_eip.nateip.*.id, count.index)
+  subnet_id     = element(aws_subnet.public.*.id, count.index)
+  depends_on    = ["aws_internet_gateway.main"]
+  tags          = merge(var.tags, map("Name", format("%s-ngw-%s", var.tags["Name"], element(data.aws_availability_zones.available.names, count.index))))
+}
 
-// Security Groups
-resource "aws_security_group" "sg-public" {
+
+// route tables for private subnets
+resource "aws_route_table" "internal" {
+  count  = "${var.subnet_count * lookup(map(var.enable_nat_gateway, 1), "true", 0)}" # var.subnet_count
   vpc_id = aws_vpc.main.id
 
+  route {
+    cidr_block     = "0.0.0.0/0"
+    nat_gateway_id = aws_nat_gateway.natgw[count.index].id
+  }
+  tags = merge(var.tags, map("Name", format("%s-rt-internal", var.tags["Name"])))
+}
+
+resource "aws_route_table_association" "private" {
+  count          = "${var.subnet_count * lookup(map(var.enable_nat_gateway, 1), "true", 0)}" # var.subnet_count
+  subnet_id      = element(aws_subnet.private.*.id, count.index)
+  route_table_id = element(aws_route_table.internal.*.id, count.index)
+}
+resource "aws_route_table_association" "db" {
+  count          = "${var.subnet_count * lookup(map(var.enable_nat_gateway, 1), "true", 0)}" # var.subnet_count
+  subnet_id      = element(aws_subnet.db.*.id, count.index)
+  route_table_id = element(aws_route_table.internal.*.id, count.index)
+}
+
+
+// Security Groups
+resource "aws_security_group" "public" {
+  vpc_id      = aws_vpc.main.id
+  name        = format("%s-sg-public", var.tags["Name"])
+  description = "SG for External Access to VPC"
   # SSH access from anywhere
   ingress {
     from_port   = 22
@@ -102,5 +129,28 @@ resource "aws_security_group" "sg-public" {
   }
 
   tags = merge(var.tags, map("Name", format("%s-sg-public", var.tags["Name"])))
+
+}
+
+resource "aws_security_group" "bastion" {
+  vpc_id      = aws_vpc.main.id
+  name        = format("%s-sg-bastion", var.tags["Name"])
+  description = "SG for Access from Public Subnets"
+  # SSH access from anywhere
+  ingress {
+    from_port       = 0
+    to_port         = 0
+    protocol        = "-1"
+    security_groups = ["${aws_security_group.public.id}"]
+  }
+  # outbound internet access
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = merge(var.tags, map("Name", format("%s-sg-bastion", var.tags["Name"])))
 
 }
