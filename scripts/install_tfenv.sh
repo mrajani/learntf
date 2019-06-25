@@ -11,4 +11,4 @@ ln -s $HOME/.tfenv/bin/* $HOME/.local/bin/
 source $HOME/.profile
 which tfenv
 tfenv install latest
-tfenv install 0.11.14
+tfenv install latest:^0.11
