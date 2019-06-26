@@ -25,7 +25,7 @@ packer_cache/
 Icon
 ._*
 .Spotlight-V100
-.Trashes
+.Trash*
 # Logs
 logs
 *.log
