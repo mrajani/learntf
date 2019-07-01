@@ -1,3 +1,6 @@
+variable "profile" {
+  default = "sandbox"
+}
 variable "region" {
   default = "us-west-2"
 }
@@ -37,4 +40,9 @@ variable "key_pair_path" {
 variable "enable_nat_gateway" {
   description = "Enable or Disable NAT gateway"
   default     = "true"
+}
+
+variable "dns_zone_name" {
+  default     = "iono.local"
+  description = "the internal dns name"
 }

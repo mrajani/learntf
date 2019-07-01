@@ -1,4 +1,5 @@
 provider "aws" {
   region                  = var.region
-  shared_credentials_file = "/home/laltopi/.aws/credentials"
+  profile                 = var.profile
+  shared_credentials_file = "$HOME/.aws/credentials"
 }

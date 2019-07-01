@@ -19,7 +19,7 @@ variable "creds_path" {
 }
 variable "profile" {
   description = "Select a Profile in creds file"
-  default     = "academy"
+  default     = "default"
 }
 
 variable "aws_dynamodb_table" {
