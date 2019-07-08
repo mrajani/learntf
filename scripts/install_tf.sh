@@ -12,6 +12,9 @@ echo "Found ${os} "
 if [[ ${os} == "centos" ]]; then
   # Install Terraform in CentOS
   echo   
+elif [[ ${os} == "amzn" ]]; then
+  # Install Terraform in Amzn Linux
+  echo Installing Terraform for AWS AMI   
 elif [[ ${os} == "ubuntu" ]]; then
   # Install Docker in Ubuntu 18.04
   sudo apt-get -yqq update && sudo apt-get install -y unzip
