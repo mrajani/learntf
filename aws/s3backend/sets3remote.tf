@@ -10,16 +10,13 @@ locals {
   backend_bucket = "remote-tfstate-${random_string.bucket_prefix.result}"
 }
 
-variable "region" {
-  default = "us-east-1"
-}
+variable "region" {}
+
 variable "creds_path" {
   description = "Path to shared_credentials_file"
-  default     = "/Scratch/credentials"
 }
 variable "profile" {
   description = "Select a Profile in creds file"
-  default     = "default"
 }
 
 variable "aws_dynamodb_table" {
@@ -54,7 +51,7 @@ resource "aws_dynamodb_table" "terraform_statelock" {
 }
 
 resource "aws_s3_bucket" "backend" {
-  bucket        = "${local.backend_bucket}"
+  bucket        = local.backend_bucket
   acl           = "private"
   force_destroy = true
 
@@ -63,7 +60,7 @@ resource "aws_s3_bucket" "backend" {
   }
 
   tags = {
-    Name    = "remote-tfstate-${random_string.bucket_prefix.result}"
+    Name    = local.backend_bucket
     Purpose = "S3 Bucket for remote state"
   }
 }
@@ -73,11 +70,11 @@ resource "local_file" "s3_profile" {
 terraform {
   backend "s3" {
     bucket         = "${local.backend_bucket}"
-    key            = "${var.profile}/terraform.state"
+    key            = "${var.profile}/terraform.tfstate"
     region         = "${var.region}"
     dynamodb_table = "${var.aws_dynamodb_table}"
   }
 }
 EOF
-  filename = "../backend.tf.ignore"
+  filename = "../s3backend.tf.ignore"
 }

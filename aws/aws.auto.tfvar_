@@ -1,0 +1,12 @@
+region        = "us-east-1"
+profile       = "sandbox"
+name          = "voyager"
+key_pair_path = "~/.ssh/walabkey"
+
+tags = {
+  Name        = "Romulan"
+  Environment = "Env"
+  AccountId   = "XYZ98760"
+  RandomeCode = "YSTPLW"
+}
+

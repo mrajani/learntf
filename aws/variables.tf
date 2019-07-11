@@ -33,9 +33,7 @@ variable "tags" {
   }
 }
 
-variable "key_pair_path" {
-  default = "/Scratch/aws_key"
-}
+variable "key_pair_path" {}
 
 variable "enable_nat_gateway" {
   description = "Enable or Disable NAT gateway"
