@@ -120,7 +120,8 @@ resource "aws_launch_template" "ec2web" {
     }
   }
   tags      = merge(var.tags, map("Name", format("%s-lb-asg", var.tags["Name"])))
-  user_data = "${base64encode("#!/bin/bash\n echo hello world")}"
+  user_data = fileexists("./stress.sh") ? filebase64("./stress.sh") : "#!/bin/bash\necho hello world"
+  # user_data = filebase64("./stress.sh")
 }
 
 resource "aws_autoscaling_group" "ec2web" {
