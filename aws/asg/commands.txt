@@ -1,7 +1,13 @@
-
-terraform init -var-file ../aws.auto.tfvars \
---backend-config="key=sandbox/vpc/terraform.tfstate" \
---backend-config="bucket=remote-tfstate-pqc1jhomr7lw" \
---backend-config="profile=sandbox" 
-
+mv s3backend.tf.ignore s3backend.tf
+terraform init -var-file ../aws.auto.tfvars
 terraform plan -out /tmp/asg.tfplan -var-file ../aws.auto.tfvars
+terraform apply "/tmp/asg.tfplan"
+terraform destroy -auto-approve -var-file ../aws.auto.tfvars
+
+#terraform init -var-file ../aws.auto.tfvars \
+#--backend-config="key=sandbox/vpc/terraform.tfstate" \
+#--backend-config="bucket=remote-tfstate-pqc1jhomr7lw" \
+#--backend-config="profile=sandbox" 
+
+
+

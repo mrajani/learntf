@@ -93,3 +93,18 @@ terraform {
 EOF
   filename = "../asg/s3backend.tf.ignore"
 }
+
+resource "local_file" "data_tfstate" {
+  content = <<EOF
+data "terraform_remote_state" "current" {
+  backend = "s3"
+  config = {
+    bucket         = "${local.backend_bucket}"
+    key            = "${var.profile}/vpc/terraform.tfstate"
+    region         = "${var.region}"
+    dynamodb_table = "${var.aws_dynamodb_table}"
+  }
+}
+EOF
+  filename = "../asg/dataremotestate.tf"
+}
