@@ -1,8 +1,13 @@
+provider "aws" {
+  region  = var.region
+  version = "~> 2.20"
+}
+
 resource "aws_lb" "fe_lb" {
   name               = format("%s-loadbalancer", var.tags["Name"])
   internal           = false
   load_balancer_type = "application"
-  subnets            = slice(aws_subnet.public.*.id, 0, 3)
+  subnets            = slice(data.terraform_remote_state.current.outputs.public_subnet_id, 0, 3)
   security_groups    = [aws_security_group.sg_lb.id]
 
   tags = merge(var.tags, map("Name", format("%s-lb-asg", var.tags["Name"])))
@@ -10,7 +15,7 @@ resource "aws_lb" "fe_lb" {
 
 
 resource "aws_security_group" "sg_lb" {
-  vpc_id      = aws_vpc.main.id
+  vpc_id      = data.terraform_remote_state.current.outputs.vpc_id
   name        = format("%s-sg-lb", var.tags["Name"])
   description = "Security group for web access to VPC"
   # web access from anywhere
@@ -33,7 +38,7 @@ resource "aws_security_group" "sg_lb" {
 }
 
 resource "aws_security_group" "sg_lt" {
-  vpc_id      = aws_vpc.main.id
+  vpc_id      = data.terraform_remote_state.current.outputs.vpc_id
   name        = format("%s-sg-lt", var.tags["Name"])
   description = "Security group for Ec2 Launch Template"
   # SSH access from anywhere
@@ -76,7 +81,7 @@ resource "aws_lb_target_group" "lb_tg" {
   name     = "${var.tags["Name"]}-alb-tg"
   port     = "80"
   protocol = "HTTP"
-  vpc_id   = aws_vpc.main.id
+  vpc_id   = data.terraform_remote_state.current.outputs.vpc_id
   tags     = merge(var.tags, map("Name", format("%s-lb-tg", var.tags["Name"])))
 
   health_check {
@@ -124,7 +129,7 @@ resource "aws_autoscaling_group" "ec2web" {
   max_size            = 6
   min_size            = 2
   target_group_arns   = [aws_lb_target_group.lb_tg.arn]
-  vpc_zone_identifier = slice(aws_subnet.public.*.id, 0, 3)
+  vpc_zone_identifier = slice(data.terraform_remote_state.current.outputs.public_subnet_id, 0, 3)
 
   launch_template {
     id      = "${aws_launch_template.ec2web.id}"
@@ -196,7 +201,7 @@ resource "aws_cloudwatch_metric_alarm" "lowcpu" {
   evaluation_periods  = "2"
   metric_name         = "CPUUtilization"
   namespace           = "AWS/EC2"
-  period              = "300"
+  period              = "60"
   statistic           = "Average"
   threshold           = "5"
 

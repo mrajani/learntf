@@ -65,16 +65,31 @@ resource "aws_s3_bucket" "backend" {
   }
 }
 
-resource "local_file" "s3_profile" {
+resource "local_file" "vpc_s3_profile" {
   content = <<EOF
 terraform {
   backend "s3" {
     bucket         = "${local.backend_bucket}"
-    key            = "${var.profile}/terraform.tfstate"
+    key            = "${var.profile}/vpc/terraform.tfstate"
     region         = "${var.region}"
     dynamodb_table = "${var.aws_dynamodb_table}"
   }
 }
 EOF
   filename = "../s3backend.tf.ignore"
+}
+
+
+resource "local_file" "asg_s3_profile" {
+  content = <<EOF
+terraform {
+  backend "s3" {
+    bucket         = "${local.backend_bucket}"
+    key            = "${var.profile}/asg/terraform.tfstate"
+    region         = "${var.region}"
+    dynamodb_table = "${var.aws_dynamodb_table}"
+  }
+}
+EOF
+  filename = "../asg/s3backend.tf.ignore"
 }
