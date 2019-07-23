@@ -1,2 +1,7 @@
-terraform plan -out /tmp/asg.tfplan -var-file ../aws.auto.tfvars
 
+terraform init -var-file ../aws.auto.tfvars \
+--backend-config="key=sandbox/vpc/terraform.tfstate" \
+--backend-config="bucket=remote-tfstate-pqc1jhomr7lw" \
+--backend-config="profile=sandbox" 
+
+terraform plan -out /tmp/asg.tfplan -var-file ../aws.auto.tfvars
