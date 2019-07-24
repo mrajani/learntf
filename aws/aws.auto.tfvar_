@@ -1,7 +1,7 @@
 region        = "us-east-1"
 profile       = "sandbox"
 name          = "voyager"
-key_pair_path = "~/.ssh/walabkey"
+key_pair_path = "~/.ssh/aws_tfadmin_id"
 
 tags = {
   Name        = "Romulan"
