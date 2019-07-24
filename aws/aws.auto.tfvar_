@@ -4,9 +4,9 @@ name          = "voyager"
 key_pair_path = "~/.ssh/aws_tfadmin_id"
 
 tags = {
-  Name        = "Romulan"
-  Environment = "Env"
+  Name        = "voyager"
+  Environment = "production"
   AccountId   = "XYZ98760"
-  RandomeCode = "YSTPLW"
+  RandomCode  = "YSTPLW"
 }
 

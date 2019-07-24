@@ -1,0 +1,5 @@
+mv s3backend.tf.ignore s3backend.tf
+terraform init
+terraform plan -out /tmp/vpc.tfplan
+terraform apply "/tmp/vpc.tfplan"
+
