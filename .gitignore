@@ -97,6 +97,7 @@ typings/
 
 # .tfvars files
 *.tfvars
+!*.auto.tfvars
 
 # rsa keys
 **/*_rsa*
