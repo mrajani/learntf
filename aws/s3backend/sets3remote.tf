@@ -1,3 +1,12 @@
+terraform {
+  required_version = "~> 0.12.6"
+  required_providers {
+    random   = "~> 2.2"
+    template = "~> 2.1"
+    local    = "~> 1.3"
+    aws      = "~> 2.24"
+  }
+}
 #-------- Variables and Locals --------#
 resource "random_string" "bucket_prefix" {
   length  = 12
@@ -66,45 +75,33 @@ resource "aws_s3_bucket" "backend" {
 }
 
 resource "local_file" "vpc_s3_profile" {
-  content = <<EOF
-terraform {
-  backend "s3" {
-    bucket         = "${local.backend_bucket}"
-    key            = "${var.profile}/vpc/terraform.tfstate"
-    region         = "${var.region}"
-    dynamodb_table = "${var.aws_dynamodb_table}"
-  }
+  content = templatefile("templates/s3backend.tpl",
+    {
+      bucket         = local.backend_bucket
+      key            = format("%s/%s/%s", var.profile, "vpc", "terraform.tfstate")
+      region         = var.region
+      dynamodb_table = var.aws_dynamodb_table
+  })
+  filename = "../s3backend.tf"
 }
-EOF
-  filename = "../s3backend.tf.ignore"
-}
-
-
 resource "local_file" "asg_s3_profile" {
-  content = <<EOF
-terraform {
-  backend "s3" {
-    bucket         = "${local.backend_bucket}"
-    key            = "${var.profile}/asg/terraform.tfstate"
-    region         = "${var.region}"
-    dynamodb_table = "${var.aws_dynamodb_table}"
-  }
-}
-EOF
-  filename = "../asg/s3backend.tf.ignore"
+  content = templatefile("templates/s3backend.tpl",
+    {
+      bucket         = local.backend_bucket
+      key            = format("%s/%s/%s", var.profile, "asg", "terraform.tfstate")
+      region         = var.region
+      dynamodb_table = var.aws_dynamodb_table
+  })
+  filename = "../asg/s3backend.tf"
 }
 
 resource "local_file" "data_tfstate" {
-  content = <<EOF
-data "terraform_remote_state" "current" {
-  backend = "s3"
-  config = {
-    bucket         = "${local.backend_bucket}"
-    key            = "${var.profile}/vpc/terraform.tfstate"
-    region         = "${var.region}"
-    dynamodb_table = "${var.aws_dynamodb_table}"
-  }
-}
-EOF
+  content = templatefile("templates/s3remotestate.tpl",
+    {
+      bucket         = local.backend_bucket
+      key            = format("%s/%s/%s", var.profile, "vpc", "terraform.tfstate")
+      region         = var.region
+      dynamodb_table = var.aws_dynamodb_table
+  })
   filename = "../asg/dataremotestate.tf"
 }
