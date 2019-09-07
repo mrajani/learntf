@@ -3,9 +3,10 @@ variable "region" {
   default     = "us-west-2"
 }
 
+variable "profile" {}
+
 variable "amis" {
   description = "Base AMI to launch the instances with"
-
   default = {
     us-west-1 = "ami-063aa838bd7631e0b"
     us-west-2 = "ami-0cb72367e98845d43"
@@ -17,16 +18,13 @@ locals {
   instance = "${lookup(var.amis, var.region)}"
 }
 
-output "9_amis" {
-  value = "${var.amis}"
-}
-
-output "instance" {
-  value = "${local.instance}"
-}
-
 provider "aws" {
-  region = "${var.region}"
+  region = var.region
+  profile = var.profile
+}
+
+variable "filters" {
+  type = list(map(string))
 }
 
 data "aws_ami" "amazon" {
@@ -39,80 +37,70 @@ data "aws_ami" "amazon" {
     values = ["137112412989"]
   }
 
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-
-  filter {
-    name   = "root-device-type"
-    values = ["ebs"]
-  }
-
-  filter {
-    name   = "state"
-    values = ["available"]
+  dynamic "filter" {
+    for_each = var.filters
+    content {
+      name   = filter.value["name"]
+      values = [filter.value["value"]]
+    }
   }
 }
 
 data "aws_ami" "ubuntu" {
   most_recent = true
   owners      = ["099720109477"]
+  name_regex  = "ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-2019*"
 
   filter {
-    name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-bionic-18.04-amd64-server-*"]
+    name   = "owner-id"
+    values = ["099720109477"]
   }
 
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
-  }
-
-  filter {
-    name   = "root-device-type"
-    values = ["ebs"]
-  }
-
-  filter {
-    name   = "state"
-    values = ["available"]
+  dynamic "filter" {
+    for_each = var.filters
+    content {
+      name   = filter.value["name"]
+      values = [filter.value["value"]]
+    }
   }
 }
 
 data "aws_ami" "centos" {
   most_recent = true
   owners      = ["aws-marketplace"]
+  name_regex  = "CentOS Linux 7*"
 
   filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
+    name   = "owner-id"
+    values = ["679593333241"]
   }
 
-  filter {
-    name   = "architecture"
-    values = ["x86_64"]
-  }
-
-  filter {
-    name   = "image-type"
-    values = ["machine"]
-  }
-
-  filter {
-    name   = "name"
-    values = ["CentOS Linux 7*"]
+  dynamic "filter" {
+    for_each = var.filters
+    content {
+      name   = filter.value["name"]
+      values = [filter.value["value"]]
+    }
   }
 }
 
 output "amazon_ami" {
-  value = "${data.aws_ami.amazon.image_id}"
+  value = "${data.aws_ami.amazon}"
 }
 
 output "ubuntu_ami" {
-  value = "${data.aws_ami.ubuntu.image_id}"
+  value = "${data.aws_ami.ubuntu}"
 }
 
 output "centos_ami" {
-  value = "${data.aws_ami.centos.image_id}"
+  value = "${data.aws_ami.centos}"
 }
+
+output "amis" {
+  value = "${var.amis}"
+}
+
+output "instance" {
+  value = "${local.instance}"
+}
+
