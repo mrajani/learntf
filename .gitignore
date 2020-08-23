@@ -14,6 +14,7 @@
 **/*.jar
 **/*.ear
 **/*.class
+**/*.swp
 
 ## From https://github.com/tacahilo/packer-centos-7/blob/master/.gitignore
 packer_cache/
@@ -94,7 +95,7 @@ typings/
 # .tfstate files
 *.tfstate
 *.tfstate.*
-
+*.tfplan
 # .tfvars files
 *.tfvars
 !*.auto.tfvars
