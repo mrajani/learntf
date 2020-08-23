@@ -7,7 +7,7 @@
 			"Resource": "arn:aws:s3:::${bucket}",
 			"Condition": {
 				"StringEquals": {
-					"aws:RequestedRegion": "us-east-1"
+					"aws:RequestedRegion": "${region}"
 				},
 				"DateGreaterThan": {
 					"aws:CurrentTime": "2020-06-18T00:00:00Z"
@@ -31,7 +31,7 @@
 			"Resource": "arn:aws:s3:::${bucket}/Engineering/$${aws:username}/*",
 			"Condition": {
 				"StringEquals": {
-					"aws:RequestedRegion": "us-east-1"
+					"aws:RequestedRegion": "${region}"
 				},
 				"DateGreaterThan": {
 					"aws:CurrentTime": "2020-06-18T00:00:00Z"

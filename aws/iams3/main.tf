@@ -5,6 +5,7 @@ terraform {
     random   = "~> 2.2"
     template = "~> 2.1"
     local    = "~> 1.4"
+    http     = "~> 1.2"
     aws      = "~> 2.32"
   }
 }
@@ -47,6 +48,10 @@ resource "aws_eip" "nateip" {
   tags  = merge(var.tags, map("Name", format("%s-nat-eip", var.tags["Name"])))
 }
 
+#-------- Find my public IP --------#
+data "http" "myip" {
+  url = "http://ipv4.icanhazip.com"
+}
 
 
 #-------- Create three types of subnets, three each --------#
@@ -195,7 +200,7 @@ resource "aws_iam_user" "name" {
 resource "aws_iam_access_key" "secret" {
   for_each = tomap(aws_iam_user.name)
   user     = each.key
-  pgp_key = "keybase:laltopi"
+  pgp_key  = "keybase:laltopi"
 }
 
 resource "aws_iam_group" "engineering" {
@@ -216,13 +221,21 @@ resource "aws_iam_group_policy_attachment" "eng-attach" {
   policy_arn = aws_iam_policy.policy.arn
 }
 
+data "template_file" "iam_policy" {
+  template = "${file("${path.module}/iam_policy.tpl")}"
+  vars = {
+    region = var.region
+    bucket = local.bucket_name
+    src_ip = format("%s/%s", chomp(data.http.myip.body),"32")
+  }
+}
+
 resource "aws_iam_policy" "policy" {
   name        = "s3_Eng_Access"
   path        = "/"
   description = "S3 Access Policy for Engineering"
-  policy      = file("policy.json")
+  policy      = data.template_file.iam_policy.rendered
 }
-
 
 #--------------- S3 Buckets ---------------#
 
@@ -274,10 +287,10 @@ resource "aws_s3_bucket" "main" {
 data "template_file" "bucket_policy" {
   template = "${file("${path.module}/s3_bucket_policy.tpl")}"
   vars = {
+    region = var.region
     bucket = local.bucket_name
-    src_ip = "8.8.8.8/32"
+    src_ip = format("%s/%s", chomp(data.http.myip.body),"32")
   }
-
 }
 
 resource "aws_s3_bucket_policy" "main" {
@@ -388,5 +401,9 @@ output "s3_bucket" {
 }
 
 output "secret_id_key" {
-  value = aws_iam_access_key.secret["alice"].id
+  value = aws_iam_access_key.secret["alice"].encrypted_secret
+}
+
+output "myip" {
+  value = data.http.myip.body
 }
