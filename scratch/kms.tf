@@ -1,18 +1,18 @@
 resource "aws_kms_key" "this" {
   description             = "KMS key for S3 encryption"
   deletion_window_in_days = 10
-  is_enabled = true
+  is_enabled              = true
 }
 
 resource "aws_kms_alias" "this" {
   name          = "alias/s3-encrypt-key"
-  target_key_id = "${aws_kms_key.this.key_id}"
+  target_key_id = aws_kms_key.this.key_id
 }
 
 
 resource "aws_kms_ciphertext" "this" {
-  key_id = "${aws_kms_key.this.key_id}"
-  plaintext = "hello world" 
+  key_id    = aws_kms_key.this.key_id
+  plaintext = "hello world"
 }
 
 output "b1_key_arn" {

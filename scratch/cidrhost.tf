@@ -19,14 +19,14 @@ variable "hostnum" {
 ##############################################
 # Outputs
 ##############################################
-output "1_iprange" {
+output "iprange_1" {
   value = "${var.iprange}"
 }
 
-output "2_hostnum" {
+output "hostnum_2" {
   value = "${var.hostnum}"
 }
 
-output "3_cidrhost_output" {
-  value = "${cidrhost(var.iprange,var.hostnum)}"
+output "cidrhost_output_3" {
+  value = "${cidrhost(var.iprange, var.hostnum)}"
 }
