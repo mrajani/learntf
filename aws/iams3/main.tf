@@ -226,7 +226,7 @@ data "template_file" "iam_policy" {
   vars = {
     region = var.region
     bucket = local.bucket_name
-    src_ip = format("%s/%s", chomp(data.http.myip.body),"32")
+    src_ip = format("%s/%s", chomp(data.http.myip.body), "32")
   }
 }
 
@@ -289,7 +289,7 @@ data "template_file" "bucket_policy" {
   vars = {
     region = var.region
     bucket = local.bucket_name
-    src_ip = format("%s/%s", chomp(data.http.myip.body),"32")
+    src_ip = format("%s/%s", chomp(data.http.myip.body), "32")
   }
 }
 
@@ -301,7 +301,62 @@ resource "aws_s3_bucket_policy" "main" {
 #--------------- Cloud Trail ---------------#
 
 #--------------- Cloud Watch ---------------#
+resource "aws_cloudwatch_event_rule" "ec2_trx" {
+  name        = "ec2-state-transistions"
+  description = "Capture EC2 Transistions"
 
+  event_pattern = <<PATTERN
+{
+  "source": [
+    "aws.ec2"
+  ],
+  "detail-type": [
+    "EC2 Instance State-change Notification"
+  ]
+}
+PATTERN
+
+  tags = merge(var.tags, map("Name", format("%s-sg-public", var.tags["Name"])))
+}
+
+resource "aws_cloudwatch_event_target" "sns" {
+  rule      = aws_cloudwatch_event_rule.ec2_trx.name
+  target_id = "SendToSNS"
+  arn       = aws_sns_topic.ec2_trx.arn
+}
+
+resource "aws_sns_topic" "ec2_trx" {
+  name         = "ec2_trx"
+  display_name = "SNS Topic for EC2 State Transitions"
+  tags         = merge(var.tags, map("Name", format("%s-sg-public", var.tags["Name"])))
+}
+
+resource "aws_sns_topic_policy" "default" {
+  arn    = aws_sns_topic.ec2_trx.arn
+  policy = data.aws_iam_policy_document.sns_topic_policy.json # Clarify
+}
+
+data "aws_iam_policy_document" "sns_topic_policy" {
+  statement {
+    effect  = "Allow"
+    actions = ["SNS:Publish"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["events.amazonaws.com"]
+    }
+
+    resources = ["${aws_sns_topic.ec2_trx.arn}"]
+  }
+}
+
+
+resource "aws_sns_topic_subscription" "sms" {
+  count     = 0
+  topic_arn = aws_sns_topic.ec2_trx.arn
+  protocol  = "sms"
+  endpoint  = var.sms_number
+}
 
 #--------------- Declare variables ---------------#
 
@@ -355,6 +410,10 @@ variable "dns_zone_name" {
 variable "username" {
   type    = list
   default = ["alice", "bob", "charlie"]
+}
+
+variable "sms_number" {
+  description = "Enter the SMS Telephone number"
 }
 
 #--------------- Show Outputs ---------------#
