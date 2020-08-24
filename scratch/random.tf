@@ -41,4 +41,4 @@ output "petname" {
 resource "time_static" "current" {}
 output "current_time" {
   value = time_static.current.rfc3339
-} 
+}
