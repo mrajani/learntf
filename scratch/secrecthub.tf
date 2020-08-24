@@ -4,7 +4,7 @@ variable "secrethub_user" {
 
 provider "secrethub" {
   version    = "~> 0.2.0"
-  credential = "${file("~/.secrethub/credential")}"
+  credential = file("~/.secrethub/credential")
 }
 
 resource "secrethub_secret" "db_password" {
