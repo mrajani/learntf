@@ -200,7 +200,7 @@ resource "aws_iam_user" "name" {
 resource "aws_iam_access_key" "secret" {
   for_each = tomap(aws_iam_user.name)
   user     = each.key
-  pgp_key  = "keybase:laltopi"
+  pgp_key  = var.pgp_key
 }
 
 resource "aws_iam_group" "engineering" {
@@ -416,6 +416,9 @@ variable "sms_number" {
   description = "Enter the SMS Telephone number"
 }
 
+variable "pgp_key" {
+  description = "keybase login id"
+}
 #--------------- Show Outputs ---------------#
 
 
@@ -459,10 +462,12 @@ output "s3_bucket" {
   value = aws_s3_bucket.main.id
 }
 
+
 output "secret_id_key" {
   value = aws_iam_access_key.secret["alice"].encrypted_secret
 }
-
+/**
 output "myip" {
   value = data.http.myip.body
 }
+*/
