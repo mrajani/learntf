@@ -40,3 +40,10 @@ resource "aws_iam_user_policy_attachment" "ecr" {
   user       = aws_iam_user.ecr.name
   policy_arn = aws_iam_policy.ecr.arn
 }
+
+output "ecr_user_access" {
+  value = {
+    "aws_access_key_id"     = aws_iam_access_key.ecr.id
+    "aws_access_secret_key" = aws_iam_access_key.ecr.secret
+  }
+}
