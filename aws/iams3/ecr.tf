@@ -15,9 +15,10 @@ resource "aws_ecr_repository" "repo-1" {
 #-- Create a user, access key, apply policy to push into ecr -----#
 
 data "template_file" "ecr" {
-  template = "${file("${path.module}/ci-push-ecr-policy.tpl")}"
+  template = file("${path.module}/ci-push-ecr-policy.tpl")
   vars = {
-    resource_arn = "arn:aws:ecr:${var.region}:*:repository/${aws_ecr_repository.repo-1.name}"
+    resource_arn = aws_ecr_repository.repo-1.arn
+    # resource_arn = "arn:aws:ecr:${var.region}:*:repository/${aws_ecr_repository.repo-1.name}"
   }
 }
 
@@ -46,4 +47,12 @@ output "ecr_user_access" {
     "aws_access_key_id"     = aws_iam_access_key.ecr.id
     "aws_access_secret_key" = aws_iam_access_key.ecr.secret
   }
+}
+
+output "ecr_arn" {
+  value = aws_ecr_repository.repo-1.arn
+}
+
+output "ecr_url" {
+  value = aws_ecr_repository.repo-1.repository_url
 }

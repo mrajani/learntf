@@ -1,15 +1,4 @@
 #-------- VPC --------#
-terraform {
-  required_version = "~> 0.13.0"
-  required_providers {
-    random   = "~> 2.2"
-    template = "~> 2.1"
-    local    = "~> 1.4"
-    http     = "~> 1.2"
-    aws      = "~> 2.32"
-  }
-}
-
 provider "aws" {
   region                  = var.region
   profile                 = var.profile
@@ -176,7 +165,7 @@ resource "aws_security_group" "bastion" {
     from_port       = 0
     to_port         = 0
     protocol        = "-1"
-    security_groups = ["${aws_security_group.public.id}"]
+    security_groups = [aws_security_group.public.id]
   }
   # outbound internet access
   egress {
@@ -200,7 +189,7 @@ resource "aws_iam_user" "name" {
 resource "aws_iam_access_key" "secret" {
   for_each = tomap(aws_iam_user.name)
   user     = each.key
-  pgp_key  = var.pgp_key
+  # pgp_key  = var.pgp_key
 }
 
 resource "aws_iam_group" "engineering" {
@@ -222,7 +211,7 @@ resource "aws_iam_group_policy_attachment" "eng-attach" {
 }
 
 data "template_file" "iam_policy" {
-  template = "${file("${path.module}/iam_policy.tpl")}"
+  template = file("${path.module}/iam_policy.tpl")
   vars = {
     region = var.region
     bucket = local.bucket_name
@@ -285,7 +274,7 @@ resource "aws_s3_bucket" "main" {
 }
 
 data "template_file" "bucket_policy" {
-  template = "${file("${path.module}/s3_bucket_policy.tpl")}"
+  template = file("${path.module}/s3_bucket_policy.tpl")
   vars = {
     region = var.region
     bucket = local.bucket_name
@@ -346,7 +335,7 @@ data "aws_iam_policy_document" "sns_topic_policy" {
       identifiers = ["events.amazonaws.com"]
     }
 
-    resources = ["${aws_sns_topic.ec2_trx.arn}"]
+    resources = [aws_sns_topic.ec2_trx.arn]
   }
 }
 
@@ -408,7 +397,7 @@ variable "dns_zone_name" {
 }
 
 variable "username" {
-  type    = list
+  type    = list(any)
   default = ["alice", "bob", "charlie"]
 }
 
