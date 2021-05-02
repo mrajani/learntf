@@ -8,8 +8,12 @@ resource "aws_iam_user" "name" {
   name = var.username
 }
 
+data "local_file" "pgp_key" {
+  filename = var.gpg_key
+}
 resource "aws_iam_access_key" "secret" {
-  user = aws_iam_user.name.id
+  user    = aws_iam_user.name.id
+  pgp_key = data.local_file.pgp_key.content_base64
 }
 
 #-------- IAM group  --------#

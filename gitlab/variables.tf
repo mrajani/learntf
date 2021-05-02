@@ -16,3 +16,6 @@ variable "backup_s3bucket" {
   default = "gitlab-s3backup"
 }
 
+variable "gpg_key" {
+  default = null
+}
