@@ -2,10 +2,10 @@
 
 ### First Generate PGP Keys
 ```sh
-## export is optional temporary GNUPG_HOME directory is created, default is $HOME/.gnupg
+## export is optional temporary GNUPGHOME directory is created, default is $HOME/.gnupg
 ## passphrase in template is for demo purposes, not to be used in production.
 ## Leave it blank, it will prompt
-export GNUPG_HOME=$(mktemp -d)
+export GNUPGHOME=$(mktemp -d)
 gpg --batch --generate-key gpg-gen-template
 ```
 
