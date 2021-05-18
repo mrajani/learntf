@@ -1,0 +1,10 @@
+#cloud-config
+runcmd:
+  - pip3 install ansible
+  - git clone https://github.com/mrajani/hc-vault /home/${userlogin}/hc-vault
+packages:
+  - jq
+  - wget
+  - unzip
+  - net-tools
+  - python3-pip
