@@ -19,7 +19,7 @@ resource "aws_internet_gateway" "main" {
 // elastic ip address for nat gateways
 resource "aws_eip" "nateip" {
   vpc   = true
-  count = "${var.subnet_count * lookup(map(var.enable_nat_gateway, 1), "true", 0)}"
+  count = var.subnet_count * lookup(map(var.enable_nat_gateway, 1), "true", 0)
   tags  = merge(var.tags, map("Name", format("%s-nat-eip", var.tags["Name"])))
 }
 
@@ -33,7 +33,7 @@ resource "aws_subnet" "public" {
   availability_zone       = element(data.aws_availability_zones.available.names, count.index)
   map_public_ip_on_launch = true
 
-  tags = "${merge(var.tags, map("Name", format("%s-subnet-public-%s", var.tags["Name"], element(data.aws_availability_zones.available.names, count.index))))}"
+  tags = merge(var.tags, map("Name", format("%s-subnet-public-%s", var.tags["Name"], element(data.aws_availability_zones.available.names, count.index))))
 
 }
 resource "aws_subnet" "private" {
@@ -43,7 +43,7 @@ resource "aws_subnet" "private" {
   availability_zone = element(data.aws_availability_zones.available.names, count.index)
 
 
-  tags = "${merge(var.tags, map("Name", format("%s-subnet-private-%s", var.tags["Name"], element(data.aws_availability_zones.available.names, count.index))))}"
+  tags = merge(var.tags, map("Name", format("%s-subnet-private-%s", var.tags["Name"], element(data.aws_availability_zones.available.names, count.index))))
 
 }
 resource "aws_subnet" "db" {
@@ -52,7 +52,7 @@ resource "aws_subnet" "db" {
   cidr_block        = cidrsubnet(aws_vpc.main.cidr_block, 8, count.index + 2 * length(data.aws_availability_zones.available.names))
   availability_zone = element(data.aws_availability_zones.available.names, count.index)
 
-  tags = "${merge(var.tags, map("Name", format("%s-subnet-db-%s", var.tags["Name"], element(data.aws_availability_zones.available.names, count.index))))}"
+  tags = merge(var.tags, map("Name", format("%s-subnet-db-%s", var.tags["Name"], element(data.aws_availability_zones.available.names, count.index))))
 
 }
 
@@ -76,17 +76,17 @@ resource "aws_route_table_association" "public" {
 
 // nat gateways
 resource "aws_nat_gateway" "natgw" {
-  count         = "${var.subnet_count * lookup(map(var.enable_nat_gateway, 1), "true", 0)}"
+  count         = var.subnet_count * lookup(map(var.enable_nat_gateway, 1), "true", 0)
   allocation_id = element(aws_eip.nateip.*.id, count.index)
   subnet_id     = element(aws_subnet.public.*.id, count.index)
-  depends_on    = ["aws_internet_gateway.main"]
+  depends_on    = [aws_internet_gateway.main]
   tags          = merge(var.tags, map("Name", format("%s-ngw-%s", var.tags["Name"], element(data.aws_availability_zones.available.names, count.index))))
 }
 
 
 // route tables for private subnets
 resource "aws_route_table" "internal" {
-  count  = "${var.subnet_count * lookup(map(var.enable_nat_gateway, 1), "true", 0)}" # var.subnet_count
+  count  = var.subnet_count * lookup(map(var.enable_nat_gateway, 1), "true", 0) # var.subnet_count
   vpc_id = aws_vpc.main.id
 
   route {
@@ -97,12 +97,12 @@ resource "aws_route_table" "internal" {
 }
 
 resource "aws_route_table_association" "private" {
-  count          = "${var.subnet_count * lookup(map(var.enable_nat_gateway, 1), "true", 0)}" # var.subnet_count
+  count          = var.subnet_count * lookup(map(var.enable_nat_gateway, 1), "true", 0) # var.subnet_count
   subnet_id      = element(aws_subnet.private.*.id, count.index)
   route_table_id = element(aws_route_table.internal.*.id, count.index)
 }
 resource "aws_route_table_association" "db" {
-  count          = "${var.subnet_count * lookup(map(var.enable_nat_gateway, 1), "true", 0)}" # var.subnet_count
+  count          = var.subnet_count * lookup(map(var.enable_nat_gateway, 1), "true", 0) # var.subnet_count
   subnet_id      = element(aws_subnet.db.*.id, count.index)
   route_table_id = element(aws_route_table.internal.*.id, count.index)
 }
