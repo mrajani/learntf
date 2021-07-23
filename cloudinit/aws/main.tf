@@ -36,6 +36,12 @@ data "cloudinit_config" "config" {
       id | tee /tmp/mytrueid
     EOL
   }
+  part {
+    content = templatefile("${path.module}/user_data.tpl",
+      {
+        include-userdata-url = "https://raw.githubusercontent.com/mrajani/cloud-init-example/master/SampleUserData"
+    })
+  }
 }
 
 resource "aws_instance" "ec21" {
