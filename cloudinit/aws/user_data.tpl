@@ -14,6 +14,4 @@ echo "Executing: Part 2"
 MIME-Version: 1.0
 Content-Type: text/x-include-url; charset="us-ascii"
 #!/bin/bash
-http://pastie.org/p/30z4t97SkQaeAiOLEazRLW/raw
-
---MIMEBOUNDARY--
+${include-userdata-url}

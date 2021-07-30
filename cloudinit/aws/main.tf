@@ -28,6 +28,16 @@ data "cloudinit_config" "config" {
         userlogin = var.userlogin
     })
   }
+
+  part {
+    content_type = "text/upstart-job"
+    content = <<-EOL
+      start on stopped rc
+      script
+        echo "Part 6" >> /var/log/order.log
+      end script
+    EOL
+  }
   part {
     content_type = "text/x-shellscript"
     content      = <<-EOL
@@ -36,12 +46,12 @@ data "cloudinit_config" "config" {
       id | tee /tmp/mytrueid
     EOL
   }
-  part {
-    content = templatefile("${path.module}/user_data.tpl",
-      {
-        include-userdata-url = "https://raw.githubusercontent.com/mrajani/cloud-init-example/master/SampleUserData"
-    })
-  }
+  # part {
+  #   content = templatefile("${path.module}/user_data.tpl",
+  #     {
+  #       include-userdata-url = "https://pastebin.com/raw/uJPu4Amk"
+  #   })
+  # }
 }
 
 resource "aws_instance" "ec21" {
@@ -50,7 +60,7 @@ resource "aws_instance" "ec21" {
   user_data     = data.cloudinit_config.config.rendered
   key_name      = "backuprole"
   tags = {
-    Name = "vm-1"
+    Name = "cloudinit-1"
   }
 }
 

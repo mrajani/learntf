@@ -1,4 +1,5 @@
-#cloud-config
+MIME-Version: 1.0
+Content-Type: text/x-cloud-config; charset="us-ascii"
 runcmd:
   - pip3 install ansible
   - git clone https://github.com/mrajani/hc-vault /home/${userlogin}/hc-vault
@@ -8,3 +9,21 @@ packages:
   - unzip
   - net-tools
   - python3-pip
+
+
+--MIMEBOUNDARY
+MIME-Version: 1.0
+Content-Type: text/cloud-boothook; charset="us-ascii"
+
+#!/bin/bash
+echo "Part 4" >> /var/log/order.log
+
+--MIMEBOUNDARY
+MIME-Version: 1.0
+Content-Type: text/upstart-job; charset="us-ascii"
+description "Sample upstart job which triggers at same time as rc scripts (This won't execute on first boot)"
+author "Test"
+
+start on runlevel [2345]
+
+exec echo Test Job ran at  `date` >> /var/log/order.log
